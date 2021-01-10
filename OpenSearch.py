@@ -18,7 +18,7 @@ def wiki_search(searchQuery):
         "action": "opensearch",
         "namespace": "0",
         "search": searchQuery,
-        "limit": "5",
+        "limit": "20",
         "format": "json"
     }
 

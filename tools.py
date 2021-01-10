@@ -27,6 +27,18 @@ def salva_txt (data, txt_filename):
 
     return filename
 
+def salva_dict (dict, txt_filename):
+    txt_datetime_now = datetime.datetime.now()
+    txt_datetime_now_usable = txt_datetime_now.strftime("%Y%m%d%H%M%S")
+
+    dict = json.dumps(dict, sort_keys=True, indent=4)
+    filename = "_" + txt_datetime_now_usable
+    filename = txt_filename + filename + ".txt"
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(dict)
+
+    return filename
+
 def remove_blank_lines (data):
     # text = os.linesep.join([s for s in data.splitlines() if s])
     if data.startswith('\n'):

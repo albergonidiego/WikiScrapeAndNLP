@@ -2,19 +2,25 @@ import OpenSearch
 import tools
 import wikiScraper
 import engineNLP
+import datetime
 import PySimpleGUI as sg
+
 
 def main():
 
     # Set the stage
     global wiki_dict
     global wiki_content
+    global searched_strings
 
+    wiki_dict = {}
     wiki_content = {}
+    searched_strings = []
     sg.theme('DefaultNoMoreNagging')
-    placeholder = ['Articles will appear here', '']
+    placeholder = ['Wikipedia articles will appear here', '']
     placeholder2 = 'Scraped content will appear here'
     placeholder3 = 'NLP summary will appear here'
+    placeholderLoading = ['... loading ...', '']
     spacing = ""
     # Create filler for bottom buttons
     for i in range(136):
@@ -23,12 +29,12 @@ def main():
 
     # Define window content
     layout = [[sg.Text("What would you like to search? ", key='_title_')],
-              [sg.InputText(key='_input_', size=(85,1)), sg.Button('SEARCH', size=(12, 1))],
+              [sg.InputText(key='_input_', size=(85,1)), sg.Button('SEARCH', size=(12, 1), bind_return_key=True)],
               [sg.Text("Search results")],
-              [sg.Listbox(values=placeholder, text_color='grey', key='_results_', size=(83, 5)),
+              [sg.Listbox(values=placeholder, text_color='black', key='_results_', size=(83, 5)),
                sg.B("SCRAPE &\nSUMMARISE", key='_run_', size=(12, 5))
                ],
-              [sg.Multiline(placeholder2, text_color='grey', size=(100, 15), key='_scrape_')],
+              [sg.Multiline(placeholder2, text_color='black', size=(100, 15), key='_scrape_')],
               [sg.Multiline(placeholder3, text_color='blue', size=(100, 10), key='_summary_')],
               [sg.B("SAVE RESULTS"), sg.Text(spacing), sg.B("QUIT")]
               ]
@@ -41,10 +47,11 @@ def main():
 
         # Handle GUI events
         if event in (None, sg.WINDOW_CLOSED, 'QUIT'):
-            # save dictionary
-            ###############################################################
-            ###############################################################
-            ###############################################################
+            # If the dictionary is not empty save it
+            if bool(wiki_content):
+                tools.salva_dict(wiki_content, 'wiki_articles_viewed')
+            if searched_strings is not None:
+                tools.salva_dict(searched_strings, 'searched_strings')
             window.close()
             break
 
@@ -52,9 +59,17 @@ def main():
         if event == "SEARCH":
             try:
                 ricerca = values['_input_']
+                datetime_now = datetime.datetime.now()
+                datetime_now_usable = datetime_now.strftime("%Y%m%d%H%M%S")
+                temp = [datetime_now_usable, ricerca]
+                searched_strings.append(temp)
+                print(searched_strings)
                 if ricerca == "":
                     sg.Popup('Please input a search value', keep_on_top=True)
                 else:
+                    # Show loading message in the relevant box
+                    show_results(placeholderLoading, window)
+                    # Search for Wikipedia articles matching the search string
                     risposta = OpenSearch.wiki_search(ricerca)
                     print(risposta[1])
                     # Create dictionary of articles -> URLs
@@ -74,6 +89,10 @@ def main():
                     print("Only one item can be selected")
                     break
                 else:
+                    datetime_now = datetime.datetime.now()
+                    datetime_now_usable = datetime_now.strftime("%Y%m%d%H%M%S")
+                    show_scrape('_scrape_', '... loading ...', window)
+                    show_scrape('_summary_', '... AI engine in motion, please wait. This may take up to 1 minute ...', window)
                     strWhatToScrape = ""
                     for item in whatToScrape:
                         strWhatToScrape += item
@@ -85,12 +104,21 @@ def main():
                     summary = engineNLP.nlp_it(testo, 150)
                     print(summary)
                     show_scrape('_summary_', summary, window)
-                    wiki_content.update({
+                    wiki_content[datetime_now_usable] = {
+                        'timestamp': datetime_now_usable,
                         'URL': URLtoScrape,
                         'title': titolo,
-                        'text': testo
-                        }
-                    )
+                        'text': testo,
+                        'ai_summary': summary
+                    }
+                    # wiki_content.update({
+                    #     'timestamp': datetime_now_usable,
+                    #     'URL': URLtoScrape,
+                    #     'title': titolo,
+                    #     'text': testo,
+                    #     'ai_summary': summary
+                    #     }
+                    # )
 
             except Exception as ex:
                 print(ex)
