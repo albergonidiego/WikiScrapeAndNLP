@@ -22,7 +22,7 @@ def main():
     placeholder3 = 'NLP summary will appear here'
     placeholderLoading = ['... loading ...', '']
     spacing = ""
-    # Create filler for bottom buttons
+    # Create filler for GUI buttons
     for i in range(136):
         spacing += " "
     risposta = None
@@ -111,14 +111,6 @@ def main():
                         'text': testo,
                         'ai_summary': summary
                     }
-                    # wiki_content.update({
-                    #     'timestamp': datetime_now_usable,
-                    #     'URL': URLtoScrape,
-                    #     'title': titolo,
-                    #     'text': testo,
-                    #     'ai_summary': summary
-                    #     }
-                    # )
 
             except Exception as ex:
                 print(ex)
@@ -158,11 +150,6 @@ def main():
 # Function to update the listbox items using the article title passed by Wikipedia
 def show_results(risposta, window):
     window['_results_'].update(values=risposta)
-    # newString = ""
-    # for item in risposta:
-    #     newString += item + '\n'
-    # print(newString)
-    # window['_results_'].update(newString)
     window.Refresh()
 
 def show_scrape(elemento, testo, window):
